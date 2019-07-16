@@ -2,10 +2,8 @@ import Vue from 'vue'
 import App from './App.vue'
 import router from './router'
 import './plugins/element.js'
-// import ElementUI from 'element-ui'
-// import 'element-ui/lib/theme-chalk/index.css'
-
-// Vue.use(ElementUI)
+import './assets/css/base.less'
+import '../fonts/iconfont.css'
 
 Vue.config.productionTip = false
 

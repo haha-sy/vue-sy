@@ -1,6 +1,13 @@
 import Vue from 'vue'
-import { Button, Link } from 'element-ui'
+import {
+  Button,
+  Form,
+  FormItem,
+  Input
+} from 'element-ui'
 
 Vue
   .use(Button)
-  .use(Link)
+  .use(Form)
+  .use(FormItem)
+  .use(Input)
