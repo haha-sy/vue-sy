@@ -29,10 +29,12 @@
 <script>
 export default {
   data: () => ({
+    // 这是登录表单的数据绑定对象
     loginFrom: {
       username: 'admin',
       password: '123456'
     },
+    // 表单验证
     loginRules: {
       username: [
         { required: true, message: '请输入登录名称', trigger: 'blur' },
@@ -47,11 +49,11 @@ export default {
   methods: {
     // 点击重置按钮，重置登录表单
     loginReset () {
-      // console.log(this)
+      console.log(this)
       this.$refs.loginRef.resetFields()
       this.loginFrom.username = this.loginFrom.password = ''
     },
-
+    // 登录
     login () {
       this.$refs.loginRef.validate(async valid => {
         if (!valid) return
