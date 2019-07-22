@@ -5,6 +5,10 @@ import './plugins/element.js'
 import './assets/css/base.less'
 import '../fonts/iconfont.css'
 import './api'
+import TreeTable from 'vue-table-with-tree-grid'
+
+Vue.component('tree-table', TreeTable)
+
 Vue.config.productionTip = false
 
 new Vue({
