@@ -40,8 +40,9 @@
     </template>
     <!-- 操作 -->
     <template slot="opt" slot-scope="scope">
-      <el-button type="primary" icon="el-icon-edit" size="mini">编辑</el-button>
-      <el-button type="danger" icon="el-icon-delete" size="mini">删除</el-button>
+      <el-button type="primary" icon="el-icon-edit" size="mini"
+      @click="showEditDialog(scope.row.cat_id)">编辑</el-button>
+      <el-button type="danger" icon="el-icon-delete" size="mini" @click="removeCate(scope.row.cat_id)">删除</el-button>
     </template>
     </tree-table>
     <!-- 分页区域 -->
@@ -61,18 +62,44 @@
     title="添加分类"
     :visible.sync="addCateDialogVisible"
     width="50%"
+    @close="addCateDialogClosed"
     >
     <el-form :model="addCateForm" :rules="addCateRules" ref="addCateFormRef" label-width="80px">
   <el-form-item label="分类名称" prop="cat_name">
     <el-input v-model="addCateForm.cat_name"></el-input>
   </el-form-item>
   <el-form-item label="父级分类">
-
-  </el-form-item>
+    <el-cascader
+    expand-trigger="hover"
+    v-model="selectedKeys"
+    :options="parantCateList"
+    :props="cascaderProps"
+    @change="parentCateChanged"
+    clearable
+    ></el-cascader>
+    </el-form-item>
     </el-form>
     <span slot="footer" class="dialog-footer">
       <el-button @click="addCateDialogVisible = false">取 消</el-button>
-      <el-button type="primary" @click="addCateDialogVisible = false">确 定</el-button>
+      <el-button type="primary" @click="addCate">确 定</el-button>
+    </span>
+  </el-dialog>
+
+  <!-- 编辑分类的对话框 -->
+  <el-dialog
+    title="修改分类"
+    :visible.sync="editCateDialogVisible"
+    width="50%"
+    @close="editCateDialogClosed"
+    >
+   <el-form :model="editForm" :rules="editFormRules" ref="editFormRef" label-width="80px">
+  <el-form-item label="分类名称" prop="cat_name">
+    <el-input v-model="editForm.cat_name"></el-input>
+  </el-form-item>
+   </el-form>
+    <span slot="footer" class="dialog-footer">
+      <el-button @click="editCateDialogVisible = false">取 消</el-button>
+      <el-button type="primary" @click="editCate">确 定</el-button>
     </span>
   </el-dialog>
   </div>
@@ -137,7 +164,29 @@ export default {
          { required: true, message: '请输入分类名称', trigger: 'blur' }
       ]
     },
-    parantCateList: []
+    // 父级分类的列表
+    parantCateList: [],
+    // 指定级联选择器的配置对象
+    cascaderProps: {
+      value: 'cat_id',
+      label: 'cat_name',
+      children: 'children'
+    },
+    // 选中的父级分类的id数组
+    selectedKeys: [],
+    // 控制编辑对话框的展示与隐藏
+    editCateDialogVisible: false,
+    // 编辑分类表单的数据对象
+    editForm: {
+      cat_id: '',
+      cat_name: ''
+    },
+    // 编辑分类的表单验证规则
+    editFormRules: {
+      cat_name: [
+      { required: true, message: '请输入分类名称', trigger: 'blur' }
+      ]
+    }
 
   }),
   created() {
@@ -171,9 +220,89 @@ export default {
     },
     // 获取父级分类的数据列表
     async getParentCateList() {
-      const { data: { data, meta } } = this.$http.get('categories', { params: { type: 2 } })
+      const { data: { data, meta } } = await this.$http.get('categories', { params: { type: 2 } })
       if (meta.status !== 200) return this.$message.error(meta.msg)
+      // console.log(data)
       this.parantCateList = data
+      console.log(this.parantCateList)
+    },
+    // 选择项发生变化触发这个函数
+    parentCateChanged() {
+      console.log(this.selectedKeys)
+      // 如果 selectedkeys 数组中的 length > 0, 就证明选中了父级分类， 反之， 就没有选中父级分类
+      if (this.selectedKeys.length > 0) {
+        // 父级分类的 id
+        this.addCateForm.cat_pid = this.selectedKeys[this.selectedKeys.length - 1]
+        // 为当前分类的等级赋值
+        this.addCateForm.cat_level = this.selectedKeys.length
+        return false
+      } else {
+         // 父级分类的 id
+        this.addCateForm.cat_pid = 0
+        // 为当前分类的等级赋值
+        this.addCateForm.cat_level = 0
+      }
+    },
+    // 点击分类，添加新的分类
+    addCate() {
+      // console.log(this.addCateForm)
+      this.$refs.addCateFormRef.validate(async valid => {
+        // console.log(valid)
+        if (!valid) return
+        const { data: { meta } } = await this.$http.post('categories', this.addCateForm)
+        if (meta.status !== 201) return this.$message.error(meta.msg)
+        this.$message.success(meta.msg)
+        this.getCategories()
+        this.addCateDialogVisible = false
+      })
+    },
+    // 监听添加分类对话框的关闭事件，点击取消，重置表单
+    addCateDialogClosed() {
+      this.$refs.addCateFormRef.resetFields()
+      this.selectedKeys = []
+      this.addCateForm.cat_pid = 0
+      this.addCateForm.cat_level = 0
+     },
+    //  展示编辑对话框
+    async showEditDialog(catId) {
+      // console.log(catId)
+      const { data: { data, meta } } = await this.$http.get('categories/' + catId)
+      console.log(data)
+      if (meta.status !== 200) return this.$message.error(meta.msg)
+      this.editForm = data
+      this.editCateDialogVisible = true
+    },
+    // 监听编辑对话框的关闭事件，点击取消，重置表单
+    editCateDialogClosed() {
+      this.$refs.editFormRef.resetFields()
+    },
+    // 点击按钮，修改分类
+    editCate() {
+       this.$refs.editFormRef.validate(async valid => {
+        // console.log(valid)
+        if (!valid) return
+        const { data: { meta } } = await this.$http.put(`categories/${this.editForm.cat_id}`, { cat_name: this.editForm.cat_name })
+        if (meta.status !== 200) return this.$message.error(meta.msg)
+        this.$message.success(meta.msg)
+        this.getCategories()
+        this.editCateDialogVisible = false
+      })
+    },
+    // 点击删除按钮事件
+    async removeCate(catId) {
+      try {
+        await this.$confirm('此操作将永久删除该分类, 是否继续?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        })
+        const { data: { meta } } = await this.$http.delete('categories/' + catId)
+        if (meta.status !== 200) return this.$message.error(meta.msg)
+        this.$message.success(meta.msg)
+        this.getCategories()
+      } catch (err) {
+        this.$message.info('已取消删除')
+      }
     }
   }
 }
@@ -181,5 +310,9 @@ export default {
 <style lang="less" scoped>
 .treeTable {
   margin: 15px 0;
+}
+
+.el-cascader {
+  width: 100%;
 }
 </style>
