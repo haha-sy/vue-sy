@@ -36,7 +36,9 @@ import {
     Step,
     Checkbox,
     CheckboxGroup,
-    Upload
+    Upload,
+    Timeline,
+    TimelineItem
 
 } from 'element-ui'
 
@@ -76,6 +78,8 @@ Vue
     .use(Checkbox)
     .use(CheckboxGroup)
     .use(Upload)
+    .use(Timeline)
+    .use(TimelineItem)
 
 Vue.prototype.$message = Message
 Vue.prototype.$confirm = MessageBox.confirm
