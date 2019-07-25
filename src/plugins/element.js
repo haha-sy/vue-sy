@@ -31,7 +31,12 @@ import {
     Option,
     Cascader,
     Tabs,
-    TabPane
+    TabPane,
+    Steps,
+    Step,
+    Checkbox,
+    CheckboxGroup,
+    Upload
 
 } from 'element-ui'
 
@@ -66,6 +71,11 @@ Vue
     .use(Cascader)
     .use(Tabs)
     .use(TabPane)
+    .use(Step)
+    .use(Steps)
+    .use(Checkbox)
+    .use(CheckboxGroup)
+    .use(Upload)
 
 Vue.prototype.$message = Message
 Vue.prototype.$confirm = MessageBox.confirm
