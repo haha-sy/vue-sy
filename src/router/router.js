@@ -12,6 +12,7 @@ import Params from '../views/Home/Goods/params'
 import GoodsList from '../views/Home/Goods/list'
 import Add from '../views/Home/Goods/Add'
 import Order from '../views/Home/Order'
+import Report from '../views/Home/Report'
 
 // 注册路由
 Vue.use(Router)
@@ -66,6 +67,10 @@ const router = new Router({
                 {
                     path: '/orders',
                     component: Order
+                },
+                {
+                    path: '/reports',
+                    component: Report
                 }
 
             ]
